@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unit Converter</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230071e3'/%3E%3Ctext x='50' y='58' font-size='54' text-anchor='middle' dominant-baseline='middle'%3E%E2%9A%96%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%230071e3'/%3E%3Ctext x='90' y='104' font-size='96' text-anchor='middle' dominant-baseline='middle'%3E%E2%9A%96%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Converter">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0071e3">
+<style>
+  :root {
+    --bg: #f5f5f7;
+    --card-bg: #ffffff;
+    --text: #1d1d1f;
+    --text-secondary: #6e6e73;
+    --accent: #0071e3;
+    --accent-hover: #0077ed;
+    --border: #d2d2d7;
+    --input-bg: #f5f5f7;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
+    --chip-bg: #f0f0f2;
+    --chip-active-bg: #0071e3;
+    --chip-active-text: #ffffff;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #000000;
+      --card-bg: #1c1c1e;
+      --text: #f5f5f7;
+      --text-secondary: #98989d;
+      --accent: #0a84ff;
+      --accent-hover: #3395ff;
+      --border: #38383a;
+      --input-bg: #2c2c2e;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2);
+      --chip-bg: #2c2c2e;
+      --chip-active-bg: #0a84ff;
+      --chip-active-text: #ffffff;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #000000;
+    --card-bg: #1c1c1e;
+    --text: #f5f5f7;
+    --text-secondary: #98989d;
+    --accent: #0a84ff;
+    --accent-hover: #3395ff;
+    --border: #38383a;
+    --input-bg: #2c2c2e;
+    --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2);
+    --chip-bg: #2c2c2e;
+    --chip-active-bg: #0a84ff;
+    --chip-active-text: #ffffff;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    padding: 24px 16px 60px;
+  }
+
+  .wrap {
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-align: center;
+    margin: 4px 0 20px;
+    letter-spacing: -0.02em;
+  }
+
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(74px, 1fr));
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 12px 4px 10px;
+    border-radius: 14px;
+    background: var(--chip-bg);
+    color: var(--text-secondary);
+    border: none;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+  }
+  .chip .chip-icon {
+    font-size: 1.3rem;
+    line-height: 1;
+  }
+  .chip:active { transform: scale(0.95); }
+  .chip.active {
+    background: var(--chip-active-bg);
+    color: var(--chip-active-text);
+  }
+
+  .card {
+    background: var(--card-bg);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .field {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .field label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  select {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--input-bg);
+    color: var(--text);
+    font-size: 1rem;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1L6 6L11 1' stroke='%2398989d' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 34px;
+    cursor: pointer;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--input-bg);
+    color: var(--text);
+    font-size: 1.15rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  input[type="text"]:focus, select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .swap-btn {
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--input-bg);
+    color: var(--accent);
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+    transition: transform 0.2s ease, background 0.15s ease;
+  }
+  .swap-btn:active { transform: scale(0.92) rotate(180deg); }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 18px 0;
+  }
+
+  .primary-result {
+    text-align: center;
+    padding: 8px 4px 20px;
+    cursor: pointer;
+    border-radius: 14px;
+    transition: background 0.12s ease;
+  }
+  .primary-result:active { background: var(--chip-bg); }
+
+  .primary-value {
+    font-size: 2.1rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    word-break: break-word;
+  }
+
+  .primary-unit {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    font-weight: 600;
+  }
+
+  .primary-from {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 2px;
+  }
+
+  .more-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+    margin: 0 4px 6px;
+  }
+
+  .results {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 4px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.12s ease;
+  }
+  .result-row:hover { background: var(--chip-bg); }
+  .result-row:active { background: var(--chip-bg); }
+
+  .result-unit {
+    font-size: 0.92rem;
+    color: var(--text-secondary);
+  }
+
+  .result-value {
+    font-size: 1.05rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hint {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin-top: 18px;
+  }
+
+  .copied-toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--text);
+    color: var(--bg);
+    padding: 10px 18px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    box-shadow: var(--shadow);
+  }
+  .copied-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <h1>Unit Converter</h1>
+
+  <div class="category-grid" id="categoryScroll"></div>
+
+  <div class="card">
+    <div class="row">
+      <div class="field">
+        <label for="fromUnit">From</label>
+        <select id="fromUnit"></select>
+      </div>
+      <button class="swap-btn" id="swapBtn" title="Swap units">⇄</button>
+      <div class="field">
+        <label for="toUnit">To</label>
+        <select id="toUnit"></select>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="field">
+      <label for="amountInput">Amount</label>
+      <input type="text" id="amountInput" inputmode="decimal" value="1" autocomplete="off">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="primary-result" id="primaryResult"></div>
+    <div class="divider"></div>
+    <div class="more-label">More conversions</div>
+    <div class="results" id="resultsList"></div>
+  </div>
+
+  <div class="hint" id="categoryNote" style="display:none;"></div>
+  <div class="hint">Tap any result to copy its value</div>
+</div>
+
+<div class="copied-toast" id="toast">Copied</div>
+
+<script>
+(function() {
+  // ---- Unit data: base-unit conversion factors per category ----
+  // For linear categories: value_in_base = value * factor
+  // Temperature handled specially.
+  const categories = {
+    length: {
+      label: "Length",
+      base: "meter",
+      units: {
+        millimeter: { label: "Millimeters (mm)", factor: 0.001 },
+        centimeter: { label: "Centimeters (cm)", factor: 0.01 },
+        meter: { label: "Meters (m)", factor: 1 },
+        kilometer: { label: "Kilometers (km)", factor: 1000 },
+        inch: { label: "Inches (in)", factor: 0.0254 },
+        foot: { label: "Feet (ft)", factor: 0.3048 },
+        yard: { label: "Yards (yd)", factor: 0.9144, common: ["foot", "meter"] },
+        mile: { label: "Miles (mi)", factor: 1609.344, common: ["kilometer", "foot"] },
+        nauticalMile: { label: "Nautical miles (nmi)", factor: 1852, common: ["kilometer", "mile"] }
+      },
+      unitOrder: ["millimeter", "centimeter", "meter", "kilometer", "inch", "foot", "yard", "mile", "nauticalMile"],
+      default: ["mile", "kilometer"]
+    },
+    weight: {
+      label: "Weight",
+      base: "kilogram",
+      units: {
+        milligram: { label: "Milligrams (mg)", factor: 0.000001, common: ["gram", "ounce"] },
+        gram: { label: "Grams (g)", factor: 0.001, common: ["milligram", "ounce", "kilogram"] },
+        kilogram: { label: "Kilograms (kg)", factor: 1, common: ["pound", "gram"] },
+        metricTon: { label: "Metric tons (t)", factor: 1000, common: ["kilogram", "usTon", "pound"] },
+        ounce: { label: "Ounces (oz)", factor: 0.028349523125, common: ["gram", "pound"] },
+        pound: { label: "Pounds (lb)", factor: 0.45359237, common: ["kilogram", "ounce", "stone"] },
+        stone: { label: "Stone (st)", factor: 6.35029318, common: ["pound", "kilogram"] },
+        usTon: { label: "US tons", factor: 907.18474, common: ["kilogram", "metricTon", "pound"] }
+      },
+      unitOrder: ["milligram", "gram", "kilogram", "metricTon", "ounce", "pound", "stone", "usTon"],
+      default: ["pound", "kilogram"]
+    },
+    temperature: {
+      label: "Temperature",
+      base: "celsius",
+      units: {
+        celsius: { label: "Celsius (°C)" },
+        fahrenheit: { label: "Fahrenheit (°F)" },
+        kelvin: { label: "Kelvin (K)" }
+      },
+      unitOrder: ["celsius", "fahrenheit", "kelvin"],
+      default: ["fahrenheit", "celsius"]
+    },
+    volume: {
+      label: "Volume",
+      base: "liter",
+      units: {
+        milliliter: { label: "Milliliters (mL)", factor: 0.001, common: ["liter", "fluidOunceUS", "teaspoon"] },
+        liter: { label: "Liters (L)", factor: 1, common: ["milliliter", "gallonUS", "quartUS"] },
+        cubicMeter: { label: "Cubic meters (m³)", factor: 1000, common: ["liter", "gallonUS"] },
+        teaspoon: { label: "Teaspoons (tsp)", factor: 0.00492892159375, common: ["tablespoon", "milliliter"] },
+        tablespoon: { label: "Tablespoons (tbsp)", factor: 0.01478676478125, common: ["teaspoon", "fluidOunceUS", "milliliter"] },
+        fluidOunceUS: { label: "US fluid ounces (fl oz)", factor: 0.0295735295625, common: ["milliliter", "tablespoon", "cupUS"] },
+        cupUS: { label: "US cups", factor: 0.2365882365, common: ["milliliter", "fluidOunceUS", "tablespoon"] },
+        pintUS: { label: "US pints (pt)", factor: 0.473176473, common: ["cupUS", "liter", "quartUS"] },
+        quartUS: { label: "US quarts (qt)", factor: 0.946352946, common: ["liter", "gallonUS", "pintUS"] },
+        gallonUS: { label: "US gallons (gal)", factor: 3.785411784, common: ["liter", "quartUS", "gallonUK"] },
+        gallonUK: { label: "Imperial gallons (UK gal)", factor: 4.54609, common: ["gallonUS", "liter"] }
+      },
+      unitOrder: ["milliliter", "liter", "cubicMeter", "teaspoon", "tablespoon", "fluidOunceUS", "cupUS", "pintUS", "quartUS", "gallonUS", "gallonUK"],
+      default: ["gallonUS", "liter"]
+    },
+    area: {
+      label: "Area",
+      base: "squareMeter",
+      units: {
+        squareMillimeter: { label: "Square millimeters (mm²)", factor: 0.000001, common: ["squareCentimeter"] },
+        squareCentimeter: { label: "Square centimeters (cm²)", factor: 0.0001, common: ["squareMillimeter", "squareMeter"] },
+        squareMeter: { label: "Square meters (m²)", factor: 1, common: ["squareCentimeter", "squareFoot", "squareYard"] },
+        hectare: { label: "Hectares (ha)", factor: 10000, common: ["acre", "squareKilometer", "squareMeter"] },
+        squareKilometer: { label: "Square kilometers (km²)", factor: 1000000, common: ["squareMile", "hectare"] },
+        squareFoot: { label: "Square feet (ft²)", factor: 0.09290304, common: ["squareMeter", "squareYard"] },
+        squareYard: { label: "Square yards (yd²)", factor: 0.83612736, common: ["squareFoot", "squareMeter"] },
+        acre: { label: "Acres", factor: 4046.8564224, common: ["hectare", "squareFoot"] },
+        squareMile: { label: "Square miles (mi²)", factor: 2589988.110336, common: ["squareKilometer", "acre"] }
+      },
+      unitOrder: ["squareMillimeter", "squareCentimeter", "squareMeter", "hectare", "squareKilometer", "squareFoot", "squareYard", "acre", "squareMile"],
+      default: ["acre", "hectare"]
+    },
+    speed: {
+      label: "Speed",
+      base: "meterPerSecond",
+      units: {
+        meterPerSecond: { label: "Meters/second (m/s)", factor: 1, common: ["kilometerPerHour", "milePerHour"] },
+        kilometerPerHour: { label: "Kilometers/hour (km/h)", factor: 0.277777778, common: ["milePerHour", "meterPerSecond"] },
+        milePerHour: { label: "Miles/hour (mph)", factor: 0.44704, common: ["kilometerPerHour", "knot"] },
+        knot: { label: "Knots (kn)", factor: 0.514444444, common: ["milePerHour", "kilometerPerHour"] },
+        foot_s: { label: "Feet/second (ft/s)", factor: 0.3048, common: ["meterPerSecond", "milePerHour"] }
+      },
+      unitOrder: ["meterPerSecond", "kilometerPerHour", "milePerHour", "knot", "foot_s"],
+      default: ["milePerHour", "kilometerPerHour"]
+    },
+    time: {
+      label: "Time",
+      base: "second",
+      units: {
+        millisecond: { label: "Milliseconds (ms)", factor: 0.001, common: ["second"] },
+        second: { label: "Seconds (s)", factor: 1, common: ["millisecond", "minute"] },
+        minute: { label: "Minutes (min)", factor: 60, common: ["second", "hour"] },
+        hour: { label: "Hours (h)", factor: 3600, common: ["minute", "day"] },
+        day: { label: "Days", factor: 86400, common: ["hour", "week"] },
+        week: { label: "Weeks", factor: 604800, common: ["day", "month"] },
+        month: { label: "Months (30 days)", factor: 2592000, common: ["week", "year", "day"] },
+        year: { label: "Years (365 days)", factor: 31536000, common: ["month", "day"] }
+      },
+      unitOrder: ["millisecond", "second", "minute", "hour", "day", "week", "month", "year"],
+      default: ["hour", "minute"]
+    },
+    data: {
+      label: "Data",
+      base: "byte",
+      units: {
+        bit: { label: "Bits (b)", factor: 0.125, common: ["byte"] },
+        byte: { label: "Bytes (B)", factor: 1, common: ["bit", "kilobyte"] },
+        kilobyte: { label: "Kilobytes (KB)", factor: 1024, common: ["byte", "megabyte"] },
+        megabyte: { label: "Megabytes (MB)", factor: 1048576, common: ["kilobyte", "gigabyte"] },
+        gigabyte: { label: "Gigabytes (GB)", factor: 1073741824, common: ["megabyte", "terabyte"] },
+        terabyte: { label: "Terabytes (TB)", factor: 1099511627776, common: ["gigabyte", "megabyte"] }
+      },
+      unitOrder: ["bit", "byte", "kilobyte", "megabyte", "gigabyte", "terabyte"],
+      default: ["gigabyte", "megabyte"]
+    },
+    pressure: {
+      label: "Pressure",
+      base: "pascal",
+      units: {
+        pascal: { label: "Pascals (Pa)", factor: 1, common: ["kilopascal"] },
+        kilopascal: { label: "Kilopascals (kPa)", factor: 1000, common: ["pascal", "bar", "psi"] },
+        bar: { label: "Bar", factor: 100000, common: ["kilopascal", "psi", "atmosphere"] },
+        psi: { label: "PSI", factor: 6894.757293168, common: ["bar", "kilopascal", "atmosphere"] },
+        atmosphere: { label: "Atmospheres (atm)", factor: 101325, common: ["bar", "psi"] }
+      },
+      unitOrder: ["pascal", "kilopascal", "bar", "psi", "atmosphere"],
+      default: ["psi", "bar"]
+    },
+    cooking: {
+      label: "Cooking",
+      base: "milliliter",
+      units: {
+        teaspoon: { label: "Teaspoons (tsp)", factor: 4.92892159375, common: ["tablespoon", "milliliter"] },
+        tablespoon: { label: "Tablespoons (tbsp)", factor: 14.78676478125, common: ["teaspoon", "cupUS", "milliliter"] },
+        fluidOunceUS: { label: "Fluid ounces (fl oz)", factor: 29.5735295625, common: ["tablespoon", "cupUS", "milliliter"] },
+        cupUS: { label: "Cups", factor: 236.5882365, common: ["tablespoon", "fluidOunceUS", "milliliter"] },
+        pintUS: { label: "Pints (pt)", factor: 473.176473, common: ["cupUS", "quartUS", "milliliter"] },
+        quartUS: { label: "Quarts (qt)", factor: 946.352946, common: ["cupUS", "pintUS", "liter"] },
+        gallonUS: { label: "Gallons (gal)", factor: 3785.411784, common: ["quartUS", "liter"] },
+        milliliter: { label: "Milliliters (mL)", factor: 1, common: ["teaspoon", "tablespoon", "cupUS"] },
+        liter: { label: "Liters (L)", factor: 1000, common: ["quartUS", "gallonUS", "cupUS"] },
+        gram: { label: "Grams (g)", factor: null, common: ["ounce", "kilogram"], massUnit: true, massFactor: 1 },
+        kilogram: { label: "Kilograms (kg)", factor: null, common: ["gram", "pound"], massUnit: true, massFactor: 1000 },
+        ounce: { label: "Ounces, weight (oz)", factor: null, common: ["gram", "pound"], massUnit: true, massFactor: 28.349523125 },
+        pound: { label: "Pounds (lb)", factor: null, common: ["ounce", "kilogram"], massUnit: true, massFactor: 453.59237 }
+      },
+      unitOrder: ["teaspoon", "tablespoon", "fluidOunceUS", "cupUS", "pintUS", "quartUS", "gallonUS", "milliliter", "liter", "gram", "kilogram", "ounce", "pound"],
+      default: ["cupUS", "milliliter"],
+      note: "Volume units (tsp–gal) and weight units (g–lb) convert within their own group. Cooking measures like cups mix both because ingredient density varies."
+    },
+    currency: {
+      label: "Currency",
+      base: "usd",
+      units: {
+        usd: { label: "US Dollar (USD)", factor: 1, common: ["eur", "gbp", "jpy", "cad"] },
+        eur: { label: "Euro (EUR)", factor: 1.154, common: ["usd", "gbp", "jpy", "chf"] },
+        gbp: { label: "British Pound (GBP)", factor: 1.348, common: ["usd", "eur", "jpy"] },
+        jpy: { label: "Japanese Yen (JPY)", factor: 0.00645, common: ["usd", "eur", "gbp"] },
+        cad: { label: "Canadian Dollar (CAD)", factor: 0.7184, common: ["usd", "eur", "gbp"] },
+        aud: { label: "Australian Dollar (AUD)", factor: 0.7126, common: ["usd", "eur", "gbp"] },
+        chf: { label: "Swiss Franc (CHF)", factor: 1.2222, common: ["usd", "eur", "gbp"] },
+        cny: { label: "Chinese Yuan (CNY)", factor: 0.1490, common: ["usd", "eur", "jpy"] },
+        inr: { label: "Indian Rupee (INR)", factor: 0.01048, common: ["usd", "eur", "gbp"] },
+        mxn: { label: "Mexican Peso (MXN)", factor: 0.05882, common: ["usd", "eur", "cad"] }
+      },
+      unitOrder: ["usd", "eur", "gbp", "jpy", "cad", "aud", "chf", "cny", "inr", "mxn"],
+      default: ["usd", "eur"],
+      note: "Approximate rates as of mid-September 2026 — for quick reference only, not live. Check a live source for anything time-sensitive."
+    }
+  };
+
+  let currentCategory = "length";
+
+  const categoryScroll = document.getElementById("categoryScroll");
+  const fromUnitEl = document.getElementById("fromUnit");
+  const toUnitEl = document.getElementById("toUnit");
+  const amountInputEl = document.getElementById("amountInput");
+  const resultsListEl = document.getElementById("resultsList");
+  const swapBtn = document.getElementById("swapBtn");
+  const toast = document.getElementById("toast");
+
+  const categoryIcons = {
+    length: "📏",
+    weight: "⚖️",
+    temperature: "🌡️",
+    volume: "📦",
+    area: "🗺️",
+    speed: "🚀",
+    time: "⏱️",
+    data: "💾",
+    pressure: "💨",
+    cooking: "🍳",
+    currency: "💱"
+  };
+
+  function buildCategoryChips() {
+    categoryScroll.innerHTML = "";
+    Object.keys(categories).forEach(key => {
+      const btn = document.createElement("button");
+      btn.className = "chip" + (key === currentCategory ? " active" : "");
+      btn.innerHTML = `
+        <span class="chip-icon">${categoryIcons[key] || "•"}</span>
+        <span>${categories[key].label}</span>
+      `;
+      btn.addEventListener("click", () => {
+        currentCategory = key;
+        buildCategoryChips();
+        buildUnitSelectors();
+        renderResults();
+      });
+      categoryScroll.appendChild(btn);
+    });
+  }
+
+  function buildUnitSelectors() {
+    const cat = categories[currentCategory];
+    const unitKeys = cat.unitOrder || Object.keys(cat.units);
+
+    fromUnitEl.innerHTML = "";
+    toUnitEl.innerHTML = "";
+    unitKeys.forEach(uk => {
+      const opt1 = document.createElement("option");
+      opt1.value = uk;
+      opt1.textContent = cat.units[uk].label;
+      fromUnitEl.appendChild(opt1);
+
+      const opt2 = document.createElement("option");
+      opt2.value = uk;
+      opt2.textContent = cat.units[uk].label;
+      toUnitEl.appendChild(opt2);
+    });
+
+    const [defFrom, defTo] = cat.default || [unitKeys[0], unitKeys[1] || unitKeys[0]];
+    fromUnitEl.value = defFrom;
+    toUnitEl.value = defTo;
+
+    const noteEl = document.getElementById("categoryNote");
+    if (cat.note) {
+      noteEl.textContent = cat.note;
+      noteEl.style.display = "block";
+    } else {
+      noteEl.style.display = "none";
+    }
+  }
+
+  // Keep the "to" unit sensible when "from" changes (esp. cooking's volume/mass split)
+  function reconcileToUnit() {
+    const cat = categories[currentCategory];
+    if (currentCategory !== "cooking") return;
+    const fromKey = fromUnitEl.value;
+    const fromIsMass = isMassUnit(cat, fromKey);
+    if (isMassUnit(cat, toUnitEl.value) !== fromIsMass) {
+      const list = cat.units[fromKey].common || [];
+      const match = list.find(k => isMassUnit(cat, k) === fromIsMass) || fromKey;
+      toUnitEl.value = match;
+    }
+  }
+
+  function toBase(value, cat, unitKey) {
+    if (currentCategory === "temperature") {
+      if (unitKey === "celsius") return value;
+      if (unitKey === "fahrenheit") return (value - 32) * 5 / 9;
+      if (unitKey === "kelvin") return value - 273.15;
+    }
+    const unit = cat.units[unitKey];
+    if (unit.massUnit) return value * unit.massFactor; // returns grams, kept in a separate "space"
+    return value * unit.factor;
+  }
+
+  function fromBase(value, cat, unitKey) {
+    if (currentCategory === "temperature") {
+      if (unitKey === "celsius") return value;
+      if (unitKey === "fahrenheit") return (value * 9 / 5) + 32;
+      if (unitKey === "kelvin") return value + 273.15;
+    }
+    const unit = cat.units[unitKey];
+    if (unit.massUnit) return value / unit.massFactor;
+    return value / unit.factor;
+  }
+
+  // Cooking category mixes two incompatible physical quantities (volume vs. mass).
+  // A "from" unit's common/target list should only ever point within its own group.
+  function isMassUnit(cat, unitKey) {
+    return !!(cat.units[unitKey] && cat.units[unitKey].massUnit);
+  }
+
+  function formatNumber(num) {
+    if (!isFinite(num)) return "—";
+    const abs = Math.abs(num);
+    let result;
+    if (abs !== 0 && (abs < 0.0001 || abs >= 1e9)) {
+      result = num.toExponential(4);
+    } else {
+      // Adaptive precision: more decimals for small numbers
+      let decimals = 4;
+      if (abs >= 1000) decimals = 2;
+      else if (abs >= 1) decimals = 4;
+      else decimals = 6;
+      result = num.toFixed(decimals);
+      // trim trailing zeros
+      result = result.replace(/\.?0+$/, "");
+      if (result === "" || result === "-") result = "0";
+    }
+    return result;
+  }
+
+  function parseAmount() {
+    const raw = amountInputEl.value.trim().replace(/,/g, "");
+    const val = parseFloat(raw);
+    return isNaN(val) ? 0 : val;
+  }
+
+  const primaryResultEl = document.getElementById("primaryResult");
+  const moreLabelEl = document.querySelector(".more-label");
+
+  function renderResults() {
+    const cat = categories[currentCategory];
+    const amount = parseAmount();
+    const fromKey = fromUnitEl.value;
+    const toKey = toUnitEl.value;
+    const baseVal = toBase(amount, cat, fromKey);
+
+    // --- Primary result: exactly what was asked for, always on top ---
+    const primaryVal = fromBase(baseVal, cat, toKey);
+    primaryResultEl.innerHTML = `
+      <div class="primary-from">${formatNumber(amount)} ${cat.units[fromKey].label}</div>
+      <div class="primary-value">${formatNumber(primaryVal)}</div>
+      <div class="primary-unit">${cat.units[toKey].label}</div>
+    `;
+    primaryResultEl.onclick = () => copyToClipboard(formatNumber(primaryVal));
+
+    // --- Secondary list: curated common conversions, minus the primary one ---
+    resultsListEl.innerHTML = "";
+
+    const unitKeys = cat.unitOrder || Object.keys(cat.units);
+    const curated = cat.units[fromKey] && cat.units[fromKey].common;
+
+    let candidateKeys = (curated && curated.length) ? curated.slice() : unitKeys;
+
+    // In cooking, never cross volume<->mass without a density — restrict
+    // candidates to the same physical group as the "from" unit.
+    if (currentCategory === "cooking") {
+      const fromIsMass = isMassUnit(cat, fromKey);
+      candidateKeys = candidateKeys.filter(k => isMassUnit(cat, k) === fromIsMass);
+    }
+
+    // De-dupe, drop the from-unit and the already-shown primary unit
+    const seen = new Set([fromKey, toKey]);
+    const ordered = [];
+    candidateKeys.forEach(k => {
+      if (!seen.has(k) && cat.units[k]) {
+        seen.add(k);
+        ordered.push(k);
+      }
+    });
+
+    moreLabelEl.style.display = ordered.length ? "block" : "none";
+
+    ordered.forEach(uk => {
+      const val = fromBase(baseVal, cat, uk);
+      const row = document.createElement("div");
+      row.className = "result-row";
+      row.innerHTML = `
+        <span class="result-unit">${cat.units[uk].label}</span>
+        <span class="result-value">${formatNumber(val)}</span>
+      `;
+      row.addEventListener("click", () => {
+        const text = formatNumber(val);
+        copyToClipboard(text);
+      });
+      resultsListEl.appendChild(row);
+    });
+  }
+
+  function copyToClipboard(text) {
+    const done = () => {
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 1200);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(done);
+    } else {
+      done();
+    }
+  }
+
+  swapBtn.addEventListener("click", () => {
+    const f = fromUnitEl.value;
+    const t = toUnitEl.value;
+    fromUnitEl.value = t;
+    toUnitEl.value = f;
+    renderResults();
+  });
+
+  fromUnitEl.addEventListener("change", () => {
+    reconcileToUnit();
+    renderResults();
+  });
+  toUnitEl.addEventListener("change", renderResults);
+  amountInputEl.addEventListener("input", renderResults);
+
+  buildCategoryChips();
+  buildUnitSelectors();
+  renderResults();
+})();
+</script>
+
+</body>
+</html>
